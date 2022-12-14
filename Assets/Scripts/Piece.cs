@@ -20,19 +20,39 @@ public enum Directions
 }
 public class Piece : MonoBehaviour
 {
-    //Reference to the game board
+    //Reference to the game board (hence public)
     [FormerlySerializedAs("board")] public Board boardScript;
     //The square this piece resides on
     public int currentSquare;
-    //Reference to this piece's image component
+    //Reference to this piece's image component (hence public)
     public Image image;
     //Boolean representing if the piece is being dragged ("held") by the player
-    public bool isHeld;
+    private bool isHeld;
     //Boolean to tell if piece is a king
-    public bool king;
+    private bool king;
     
     //This piece's color
     private GameColors _pieceColor = GameColors.White;
+
+    //Getters and Setters
+    public int GetCurrentSquare()
+    {
+        return currentSquare;
+    }
+    public void SetCurrentSquare(int value)
+    {
+        currentSquare = value;
+    }
+
+    public bool GetIsKing()
+    {
+        return king;
+    }
+    public void SetIsKing(bool value)
+    {
+        king = value;
+    }
+    
     public GameColors GetColor()
     {
         return _pieceColor;
@@ -158,6 +178,8 @@ public class Piece : MonoBehaviour
     {
         int smallMod;
         int bigMod;
+        
+        //Check what the modifiers that should be applied to find the neighbors will be
         if (boardScript.squareArray[squareNum].squareCoords.y % 2 != 0)
         {
             if (color == GameColors.White)
@@ -186,28 +208,68 @@ public class Piece : MonoBehaviour
         }
 
         Vector2Int neighbors = new Vector2Int();
+        
+        //Applying the modifiers in a way that accounts for the exceptions: pieces on the edge of the board have some
+        //neighbors marked as -1, that is, the neighbors that do not exist
         if (color == GameColors.White)
         {
-            neighbors.x = squareNum - smallMod;
-            neighbors.y = squareNum - bigMod;
+            if (boardScript.edges.GetRow(0).Contains(squareNum))
+            {
+                neighbors.x = -1;
+                neighbors.y = -1;
+            }
+            else if (boardScript.edges.GetRow(1).Contains(squareNum))
+            {
+                neighbors.x = -1;
+                neighbors.y = squareNum - bigMod;
+            }
+            else if (boardScript.edges.GetRow(3).Contains(squareNum))
+            {
+                neighbors.y = -1;
+                neighbors.x = squareNum - smallMod;
+            }
+            else
+            {
+                neighbors.x = squareNum - smallMod;
+                neighbors.y = squareNum - bigMod;
+            }
         }
         else
         {
-            neighbors.x = squareNum + smallMod;
-            neighbors.y = squareNum + bigMod;
+            if (boardScript.edges.GetRow(2).Contains(squareNum))
+            {
+                neighbors.x = -1;
+                neighbors.y = -1;
+            }
+            else if(boardScript.edges.GetRow(1).Contains(squareNum))
+            {
+                neighbors.x = squareNum + smallMod;
+                neighbors.y = -1;
+            }
+            else if(boardScript.edges.GetRow(3).Contains(squareNum))
+            {
+                neighbors.x = -1;
+                neighbors.y = squareNum + bigMod;
+            }
+            else
+            {
+                neighbors.x = squareNum + smallMod;
+                neighbors.y = squareNum + bigMod;
+            }
         }
 
         return neighbors;
     }
 
     //Code for finding ALL adjacent squares of any given square, in an order that allows for easy checking of move legality
-    int[] FindNeighborsKing(int squareNum, GameColors color)
+    public int[] FindNeighborsKing(int squareNum, GameColors color)
         {
             int smallModFwd;
             int bigModFwd;
             int smallModBck;
             int bigModBck;
             
+            //Check what the modifiers that should be applied to find the neighbors will be
             if (boardScript.squareArray[squareNum].squareCoords.y % 2 != 0)
             {
                 if (color == GameColors.White)
@@ -245,19 +307,83 @@ public class Piece : MonoBehaviour
 
         int[] neighbors = new int[4];
 
+        //Applying the modifiers in a way that accounts for the exceptions: pieces on the edge of the board have some
+        //neighbors marked as -1, that is, the neighbors that do not exist
         if (color == GameColors.White)
         {
-            neighbors[0] = squareNum - smallModFwd;
-            neighbors[1] = squareNum - bigModFwd;
-            neighbors[2] = squareNum + smallModBck;
-            neighbors[3] = squareNum + bigModBck;
+            if (boardScript.edges.GetRow(0).Contains(squareNum))
+            {
+                neighbors[0] = -1;
+                neighbors[1] = -1;
+                neighbors[2] = squareNum + smallModBck;
+                neighbors[3] = squareNum + bigModBck;
+            }
+            else if (boardScript.edges.GetRow(1).Contains(squareNum))
+            {
+                neighbors[0] = -1;
+                neighbors[1] = squareNum - bigModFwd;
+                neighbors[2] = -1;
+                neighbors[3] = squareNum + bigModBck;
+            }
+            else if (boardScript.edges.GetRow(2).Contains(squareNum))
+            {
+                neighbors[0] = squareNum - smallModFwd;
+                neighbors[1] = squareNum - bigModFwd;
+                neighbors[2] = -1;
+                neighbors[3] = -1;
+            }
+            else if (boardScript.edges.GetRow(3).Contains(squareNum))
+            {
+                neighbors[0] = squareNum - smallModFwd;
+                neighbors[1] = -1;
+                neighbors[2] = squareNum + smallModBck;
+                neighbors[3] = -1;
+            }
+            else
+            {
+                neighbors[0] = squareNum - smallModFwd;
+                neighbors[1] = squareNum - bigModFwd;
+                neighbors[2] = squareNum + smallModBck;
+                neighbors[3] = squareNum + bigModBck;
+            }
         }
         else
         {
-            neighbors[0] = squareNum + smallModFwd;
-            neighbors[1] = squareNum + bigModFwd;
-            neighbors[2] = squareNum - smallModBck;
-            neighbors[3] = squareNum - bigModBck;
+            if (boardScript.edges.GetRow(0).Contains(squareNum))
+            {
+                neighbors[0] = squareNum + smallModFwd;
+                neighbors[1] = squareNum + bigModFwd;
+                neighbors[2] = -1;
+                neighbors[3] = -1;
+            }
+            else if (boardScript.edges.GetRow(1).Contains(squareNum))
+            {
+                neighbors[0] = squareNum + smallModFwd;
+                neighbors[1] = -1;
+                neighbors[2] = squareNum - smallModBck;
+                neighbors[3] = -1;
+            }
+            else if (boardScript.edges.GetRow(2).Contains(squareNum))
+            {
+                neighbors[0] = -1;
+                neighbors[1] = -1;
+                neighbors[2] = squareNum - smallModBck;
+                neighbors[3] = squareNum - bigModBck;
+            }
+            else if (boardScript.edges.GetRow(3).Contains(squareNum))
+            {
+                neighbors[0] = -1;
+                neighbors[1] = squareNum + bigModFwd;
+                neighbors[2] = -1;
+                neighbors[3] = squareNum - bigModBck;
+            }
+            else
+            {
+                neighbors[0] = squareNum + smallModFwd;
+                neighbors[1] = squareNum + bigModFwd;
+                neighbors[2] = squareNum - smallModBck;
+                neighbors[3] = squareNum - bigModBck;
+            }
         }
         
         return neighbors;
@@ -271,7 +397,7 @@ public class Piece : MonoBehaviour
         
         //If the player HAS to move a piece (meaning the variable is not equal to -1) and that piece is not this, the move is
         //illegal.
-        int forcedPieceCurrent = boardScript.gameManager.forcedPiece;
+        int forcedPieceCurrent = boardScript.gameManager.GetForcedPiece();
         if (forcedPieceCurrent != -1 && forcedPieceCurrent != currentSquare)
         {
             return false;
@@ -299,12 +425,17 @@ public class Piece : MonoBehaviour
         {
             for (int i = 0; i < kingNeighbors.Length; i++)
             {
-                if (CanCapture(Directions.x, currentSquare, i)
-                    && targetSquare == FindNeighborsKing(kingNeighbors[i], _pieceColor)[i])
+                if (!(kingNeighbors[i] >= boardScript.board.Length) && kingNeighbors[i] >= 0)
                 {
-                    boardScript.gameManager.OnCapture(GameColors.Black, this, targetSquare);
-                    boardScript.board[kingNeighbors[i]] = 0;
-                    return true;
+                    if (CanCapture(Directions.x, currentSquare, i)
+                        && targetSquare == FindNeighborsKing(kingNeighbors[i], _pieceColor)[i])
+                    {
+                        boardScript.gameManager.OnCapture(_pieceColor == GameColors.White
+                            ? GameColors.Black
+                            : GameColors.White, this, targetSquare);
+                        boardScript.board[kingNeighbors[i]] = 0;
+                        return true;
+                    }
                 }
             }
         }
@@ -349,31 +480,34 @@ public class Piece : MonoBehaviour
         //check that the neighbors of the piece are not past the edges of the board, in which case it is on the edge
         //and will not be able to capture
         //TODO: fix bug where king cant ever capture when on edges
-        print(kingDir);
-        if (king &&
-            (kingNeighbors[kingDir] < 0 || boardScript.board.Length <= kingNeighbors[kingDir]) &&
+        if (king)
+        {
+            if((kingNeighbors[kingDir] < 0 || boardScript.board.Length <= kingNeighbors[kingDir]) &&
             (FindNeighborsKing(kingNeighbors[kingDir], _pieceColor)[kingDir] < 0 || 
              boardScript.board.Length <= FindNeighborsKing(kingNeighbors[kingDir], _pieceColor)[kingDir]))
-        {
-            return false;
+            {
+                return false;
+            }
         }
-
-        if ((neighbors.x < 0 || boardScript.board.Length <= neighbors.x ||
-                FindNeighbors(neighbors.x, _pieceColor).x < 0 ||
-                FindNeighbors(neighbors.x, _pieceColor).x >= boardScript.board.Length) 
+        else
+        {
+            if ((neighbors.x < 0 || boardScript.board.Length <= neighbors.x ||
+                 FindNeighbors(neighbors.x, _pieceColor).x < 0 ||
+                 FindNeighbors(neighbors.x, _pieceColor).x >= boardScript.board.Length) 
                 && directionToCapture == Directions.x)
-        {
-            return false;
+            {
+                return false;
+            }
+
+            if ((neighbors.y < 0 || boardScript.board.Length <= neighbors.y ||
+                 FindNeighbors(neighbors.y, _pieceColor).y < 0 ||
+                 FindNeighbors(neighbors.y, _pieceColor).y >= boardScript.board.Length) 
+                && directionToCapture == Directions.y)
+            {
+                return false;
+            }
         }
 
-        if ((neighbors.y < 0 || boardScript.board.Length <= neighbors.y ||
-             FindNeighbors(neighbors.y, _pieceColor).y < 0 ||
-             FindNeighbors(neighbors.y, _pieceColor).y >= boardScript.board.Length) 
-             && directionToCapture == Directions.y)
-        {
-            return false;
-        }
-        
         //Actual checking if the piece can capture: if the current piece's neighbor in the
         //direction that the piece is trying to capture in is equal to the opposite color's
         //value (1 or -1, 2 or -2) AND there is an open space behind the target, the piece can capture.
@@ -384,41 +518,43 @@ public class Piece : MonoBehaviour
                 if (boardScript.board[kingNeighbors[kingDir]] == -1 || boardScript.board[kingNeighbors[kingDir]] == -2
                     && boardScript.board[FindNeighborsKing(kingNeighbors[kingDir], _pieceColor)[kingDir]] == 0)
                 {
-                        print(boardScript.board[kingNeighbors[kingDir]] + " at " + kingNeighbors[kingDir]);
                         return true;
                 }
             }
-            switch (directionToCapture)
+            else
             {
-                case Directions.x:
-                    return (boardScript.board[neighbors.x] == -1 || boardScript.board[neighbors.x] == -2) 
-                           && boardScript.board[FindNeighbors(neighbors.x, _pieceColor).x] == 0;
-                case Directions.y:
-                    return (boardScript.board[neighbors.y] == -1 || boardScript.board[neighbors.y] == -2)
-                           && boardScript.board[FindNeighbors(neighbors.y, _pieceColor).y] == 0;
+                switch (directionToCapture)
+                {
+                    case Directions.x:
+                        return (boardScript.board[neighbors.x] == -1 || boardScript.board[neighbors.x] == -2) 
+                               && boardScript.board[FindNeighbors(neighbors.x, _pieceColor).x] == 0;
+                    case Directions.y:
+                        return (boardScript.board[neighbors.y] == -1 || boardScript.board[neighbors.y] == -2)
+                               && boardScript.board[FindNeighbors(neighbors.y, _pieceColor).y] == 0;
+                }
             }
         }
         else
         {
             if (king)
             {
-                for (int i = 0; i < kingNeighbors.Length; i++)
+                if (boardScript.board[kingNeighbors[kingDir]] == 1 || boardScript.board[kingNeighbors[kingDir]] == 2
+                    && boardScript.board[FindNeighborsKing(kingNeighbors[kingDir], _pieceColor)[kingDir]] == 0)
                 {
-                    if (boardScript.board[kingNeighbors[i]] == 1 || boardScript.board[kingNeighbors[i]] == 2
-                        && boardScript.board[FindNeighborsKing(kingNeighbors[i], _pieceColor)[i]] == 0)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
-            switch (directionToCapture)
+            else
             {
-                case Directions.x:
-                    return (boardScript.board[neighbors.x] == 1 || boardScript.board[neighbors.x] == 2)
-                           && boardScript.board[FindNeighbors(neighbors.x, _pieceColor).x] == 0;
-                case Directions.y:
-                    return (boardScript.board[neighbors.y] == 1 || boardScript.board[neighbors.y] == 2)
-                           && boardScript.board[FindNeighbors(neighbors.y, _pieceColor).y] == 0;
+                switch (directionToCapture)
+                {
+                    case Directions.x:
+                        return (boardScript.board[neighbors.x] == 1 || boardScript.board[neighbors.x] == 2)
+                               && boardScript.board[FindNeighbors(neighbors.x, _pieceColor).x] == 0;
+                    case Directions.y:
+                        return (boardScript.board[neighbors.y] == 1 || boardScript.board[neighbors.y] == 2)
+                               && boardScript.board[FindNeighbors(neighbors.y, _pieceColor).y] == 0;
+                }
             }
         }
         return false;

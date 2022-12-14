@@ -502,9 +502,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardScript: {fileID: 1000182418}
-  numMoves: 0
-  forcedPiece: -1
-  forcedDirection: 0
 --- !u!4 &841345814
 Transform:
   m_ObjectHideFlags: 0

@@ -23,6 +23,16 @@ public class Board : MonoBehaviour
     //1 means there is a white piece there and -1 means there is a black piece there
     public int[] board = new int[32];
     
+    //The board's edge pieces - for solving some (literal) edge cases. First item is the top row,
+    //second is the right, third is the bottom, and fourth is the left.
+    public int[,] edges =
+    {
+        { 0, 1, 2, 3 },
+        { 3, 11, 19, 27 },
+        { 31, 30, 29, 28 },
+        { 28, 20, 12, 4 }
+    };
+    
     //Two arrays for holding the classes that represent the graphical representations of the squares
     //and pieces
     public Square[] squareArray = new Square[32];
@@ -137,8 +147,20 @@ public class Board : MonoBehaviour
             }
             if (board[i] == 2 || board[i] == -2)
             {
-                g.king = true;
+                g.SetIsKing(true);
             }
         }
     }
 }
+
+static class Extentions
+{
+    public static T[] GetRow<T>(this T[,] matrix,int rowNumber)
+    {
+        return Enumerable.Range(0, matrix.GetLength(1))
+            .Select(x => matrix[rowNumber, x])
+            .ToArray();
+
+    }
+}
+
