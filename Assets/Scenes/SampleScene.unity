@@ -501,6 +501,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 683a33a68b7374b4d8a05971ea4c34f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  useAI: 1
   boardScript: {fileID: 1000182418}
 --- !u!4 &841345814
 Transform:

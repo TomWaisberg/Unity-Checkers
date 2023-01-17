@@ -135,8 +135,9 @@ public class Board : MonoBehaviour
             
             Piece g = Instantiate(pieceObject, squareArray[i].transform.position, Quaternion.identity, piecesHolder.transform)
                 .GetComponent<Piece>();
-            g.currentSquare = i;
+            g.SetCurrentSquare(i);
             pieceGFXArray[i] = g;
+
             if (board[i] == 1 || board[i] == 2)
             {
                 g.SetColor(GameColors.White);
@@ -149,6 +150,7 @@ public class Board : MonoBehaviour
             {
                 g.SetIsKing(true);
             }
+            
         }
     }
 }
