@@ -53,13 +53,13 @@ public class Board : MonoBehaviour
 
     private void Start()
     {
-        GenerateBoardUI();
+        //GenerateBoardUI();
         GenerateStartingPosition();
     }
 
     //Function for generating the 8x8 board graphics and attaching each square graphic to it's appropriate
     //index in the board array (only if it's black)
-    public void GenerateBoardUI()
+    /*public void GenerateBoardUI()
     {
         //Index used to keep track of what black square number is being placed
         int blackSquareIndex = 0;
@@ -101,7 +101,7 @@ public class Board : MonoBehaviour
                 }
             }
         }
-    }
+    }*/
 
     //Simple function for generating the starting positions of all the pieces on the board.
     //Could be done manually in inspector

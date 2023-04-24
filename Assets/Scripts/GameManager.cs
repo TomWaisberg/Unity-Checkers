@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
             boardScript.board[pieceMoved.targetSquare.squareNum] = -2;
         }
         
-        //Every turn, calculate all enemy's moves. Chose one of them to play TODO: make it smart
+        //Every turn, calculate all enemy's moves. Chose one of them to play TODO: make it smarter
         Invoke(nameof(DoEnemyMove), 0.3f);
     }
 
@@ -159,6 +159,8 @@ public class GameManager : MonoBehaviour
 
     void DoEnemyMove()
     {
+        //Code for enemy (black pieces) moves using the algorithm
+        //This loop gets all moves that are legal for black to play
         if (currentTurn == GameColors.Black && useAI)
         {
             List<Move> allEnemyMoves = new List<Move>();
@@ -175,8 +177,77 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
+
+            //Here we have my fairly weak and inefficient algorithm for enemy moves. Essentially it sorts all the moves
+            //Into a few categories, and each category has priority over others. The category which has the highest priority is checked for
+            //Legal moves, and if it has multiple of these, a random one is chosen. If it has no moves, the next category is checked.
+            List<Move> captureMoves = new List<Move>();
+            List<Move> defendingMoves = new List<Move>();
+            List<Move> nonTerribleMoves = new List<Move>();
+            List<Move> kingMoves = new List<Move>();
+
+            foreach (var move in allEnemyMoves)
+            {
+                //Sorts moves that capture an enemy piece
+                if (move.GetPieceCaptured() != null)
+                {
+                    captureMoves.Add(move);
+                }
+                
+                //Sorts moves that make a king
+                if (boardScript.edges.GetRow(2).Contains(move.GetTargetSquare()))
+                {
+                    kingMoves.Add(move);
+                }
+
+                bool onEdge = false;
+                for (int i = 0; i < boardScript.edges.GetLength(0); i++)
+                {
+                    for (int j = 0; j < boardScript.edges.GetLength(1); j++)
+                    {
+                        if (boardScript.edges[i, j] == move.GetTargetSquare())
+                        {
+                            onEdge = true;
+                        }
+                    }
+                }
+
+                if (onEdge)
+                {
+                    continue;
+                }
+                
+                //Sorts moves that put a piece behind another piece/put the piece under attack
+                if (boardScript.board[boardScript.pieceGFXArray[move.GetOriginSquare()].FindNeighbors(move.GetTargetSquare(), GameColors.Black).x] <= 0||
+                    boardScript.board[boardScript.pieceGFXArray[move.GetOriginSquare()].FindNeighbors(move.GetTargetSquare(), GameColors.Black).y] <= 0)
+                {
+                    nonTerribleMoves.Add(move);
+                }
+                if (boardScript.board[boardScript.pieceGFXArray[move.GetOriginSquare()].FindNeighbors(move.GetTargetSquare(), GameColors.Black).x] < 0||
+                    boardScript.board[boardScript.pieceGFXArray[move.GetOriginSquare()].FindNeighbors(move.GetTargetSquare(), GameColors.Black).y] < 0)
+                {
+                    defendingMoves.Add(move);
+                }
+            }
+
             Move chosenMove = allEnemyMoves[UnityEngine.Random.Range(0, allEnemyMoves.Count)];
             
+            if (nonTerribleMoves.Count > 0)
+            {
+                chosenMove = nonTerribleMoves[UnityEngine.Random.Range(0, nonTerribleMoves.Count)];
+            } if (captureMoves.Count > 0)
+            {
+                chosenMove = captureMoves[UnityEngine.Random.Range(0, captureMoves.Count)];
+            }
+            else if (defendingMoves.Count > 0)
+            {
+                chosenMove = defendingMoves[UnityEngine.Random.Range(0, defendingMoves.Count)];
+            }
+            else if (kingMoves.Count > 0)
+            {
+                chosenMove = kingMoves[UnityEngine.Random.Range(0, kingMoves.Count)];
+            }
+
             //Do another check to see that the randomly chosen piece has not been captured this turn, as the gfx 
             //entity is deleted only slightly after.
             if (boardScript.board[chosenMove.GetOriginSquare()] != 0)
